@@ -13,10 +13,7 @@ export function SideNavigation() {
   const { activeNav, setActiveNav, openNewTransactionModal } = useUIStore()
 
   const handleNavClick = (navId: string) => {
-    console.log('[Navigation] Clicked:', navId)
-    console.log('[Navigation] Current activeNav:', activeNav)
     setActiveNav(navId)
-    console.log('[Navigation] Called setActiveNav with:', navId)
   }
 
   return (

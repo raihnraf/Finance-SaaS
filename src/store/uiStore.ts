@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { shallow } from 'zustand/shallow'
 
 interface UIState {
   sidebarCollapsed: boolean
@@ -10,6 +11,22 @@ interface UIState {
   closeNewTransactionModal: () => void
 }
 
+/**
+ * Zustand store for UI state.
+ * Manages navigation, sidebar, and modal states.
+ *
+ * @example
+ * ```tsx
+ * // Select multiple values with shallow comparison
+ * const { activeNav, setActiveNav } = useUIStore(
+ *   (state) => ({
+ *     activeNav: state.activeNav,
+ *     setActiveNav: state.setActiveNav,
+ *   }),
+ *   shallow
+ * )
+ * ```
+ */
 export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: false,
   activeNav: 'dashboard',
@@ -19,3 +36,6 @@ export const useUIStore = create<UIState>((set) => ({
   openNewTransactionModal: () => set({ showNewTransactionModal: true }),
   closeNewTransactionModal: () => set({ showNewTransactionModal: false }),
 }))
+
+// Re-export shallow for convenience in components
+export { shallow }

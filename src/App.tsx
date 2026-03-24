@@ -80,28 +80,19 @@ function PageLoader() {
 function App() {
   const { activeNav, showNewTransactionModal, closeNewTransactionModal } = useUIStore()
 
-  console.log('[App] Rendering with activeNav:', activeNav)
-
   const renderContent = (): ReactNode => {
-    console.log('[App] renderContent called, activeNav:', activeNav)
     switch (activeNav) {
       case 'dashboard':
-        console.log('[App] Rendering Dashboard')
         return <Dashboard />
       case 'revenue':
-        console.log('[App] Rendering RevenueDashboard')
         return <RevenueDashboard />
       case 'cashflow':
-        console.log('[App] Rendering CashFlowDashboard')
         return <CashFlowDashboard />
       case 'transactions':
-        console.log('[App] Rendering TransactionsDashboard')
         return <TransactionsDashboard />
       case 'settings':
-        console.log('[App] Rendering AccountSettings')
         return <AccountSettings />
       default:
-        console.log('[App] Rendering default Dashboard')
         return <Dashboard />
     }
   }
