@@ -10,10 +10,10 @@ A modern, high-performance SaaS finance dashboard featuring real-time portfolio 
 ## 📸 Screenshots
 
 ### Dashboard Overview
-![Dashboard](file:///home/raihan/Pictures/Screenshots/Screenshot%20from%202026-03-25%2006-43-43.png)
+![Dashboard](public/screenshots/dashboard.png)
 
 ### Revenue Analytics
-![Revenue Analytics](file:///home/raihan/Pictures/Screenshots/Screenshot%20from%202026-03-25%2006-44-12.png)
+![Revenue Analytics](public/screenshots/revenue-analytics.png)
 
 ## 🛠️ Tech Stack
 
