@@ -48,3 +48,5 @@ SIDEBAR_*.md
 TRANSACTION_*.md
 TRANSACTIONS_*.md
 todo.md
+*.md
+!README.md
