@@ -18,16 +18,22 @@ export function TransactionsTable() {
         <table className="w-full text-left">
           <thead>
             <tr className="bg-surface-container-low/50">
-              <th className="px-8 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
+              <th className="px-6 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
                 Recipient
               </th>
-              <th className="px-8 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
+              <th className="px-6 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
                 Category
               </th>
-              <th className="px-8 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
+              <th className="px-6 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
+                Payment Method
+              </th>
+              <th className="px-6 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
+                Approved By
+              </th>
+              <th className="px-6 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold">
                 Status
               </th>
-              <th className="px-8 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold text-right">
+              <th className="px-6 py-4 text-sm uppercase tracking-widest text-on-surface-variant font-bold text-right">
                 Amount
               </th>
             </tr>

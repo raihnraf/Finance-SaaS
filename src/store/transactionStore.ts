@@ -9,6 +9,9 @@ export interface Transaction {
   amount: number
   date: string
   time: string
+  paymentMethod: 'Credit Card' | 'Bank Transfer' | 'ACH' | 'Wire' | 'Check'
+  approvedBy: string
+  approverInitials: string
 }
 
 interface TransactionState {
@@ -26,7 +29,10 @@ export const useTransactionStore = create<TransactionState>((set) => ({
       status: 'completed',
       amount: -12480.00,
       date: 'Sep 12, 2023',
-      time: '14:32'
+      time: '14:32',
+      paymentMethod: 'Credit Card',
+      approvedBy: 'Sarah Chen',
+      approverInitials: 'SC'
     },
     {
       id: '2',
@@ -36,7 +42,10 @@ export const useTransactionStore = create<TransactionState>((set) => ({
       status: 'completed',
       amount: 45230.50,
       date: 'Sep 11, 2023',
-      time: '09:15'
+      time: '09:15',
+      paymentMethod: 'Bank Transfer',
+      approvedBy: 'Mike Johnson',
+      approverInitials: 'MJ'
     },
     {
       id: '3',
@@ -46,7 +55,10 @@ export const useTransactionStore = create<TransactionState>((set) => ({
       status: 'pending',
       amount: -8920.00,
       date: 'Sep 10, 2023',
-      time: '16:45'
+      time: '16:45',
+      paymentMethod: 'ACH',
+      approvedBy: 'Pending',
+      approverInitials: 'PD'
     },
     {
       id: '4',
@@ -56,7 +68,10 @@ export const useTransactionStore = create<TransactionState>((set) => ({
       status: 'completed',
       amount: -15600.00,
       date: 'Sep 09, 2023',
-      time: '11:20'
+      time: '11:20',
+      paymentMethod: 'Wire',
+      approvedBy: 'Sarah Chen',
+      approverInitials: 'SC'
     },
     {
       id: '5',
@@ -66,7 +81,10 @@ export const useTransactionStore = create<TransactionState>((set) => ({
       status: 'completed',
       amount: 125000.00,
       date: 'Sep 08, 2023',
-      time: '14:00'
+      time: '14:00',
+      paymentMethod: 'Bank Transfer',
+      approvedBy: 'Mike Johnson',
+      approverInitials: 'MJ'
     }
   ],
   addTransaction: (transaction) =>
