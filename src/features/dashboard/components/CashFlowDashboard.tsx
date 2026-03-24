@@ -96,7 +96,7 @@ export function CashFlowDashboard() {
   }
 
   return (
-    <div className="pt-28 px-12 pb-20">
+    <div className="p-10 space-y-8">
       {/* Page Header */}
       <div className="flex justify-between items-end mb-12">
         <div>

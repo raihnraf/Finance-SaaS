@@ -1,24 +1,31 @@
 import { create } from 'zustand'
-
-export interface Transaction {
-  id: string
-  recipient: string
-  initials: string
-  category: string
-  status: 'completed' | 'pending'
-  amount: number
-  date: string
-  time: string
-  paymentMethod: 'Credit Card' | 'Bank Transfer' | 'ACH' | 'Wire' | 'Check'
-  approvedBy: string
-  approverInitials: string
-}
+import { shallow } from 'zustand/shallow'
+import { Transaction } from '@/features/dashboard/types'
 
 interface TransactionState {
   transactions: Transaction[]
   addTransaction: (transaction: Transaction) => void
 }
 
+/**
+ * Zustand store for transaction state.
+ * Contains mock data for portfolio demonstration.
+ * 
+ * @example
+ * ```tsx
+ * // Select all transactions
+ * const transactions = useTransactionStore((state) => state.transactions)
+ * 
+ * // Select with shallow comparison for multiple values
+ * const { transactions, addTransaction } = useTransactionStore(
+ *   (state) => ({
+ *     transactions: state.transactions,
+ *     addTransaction: state.addTransaction,
+ *   }),
+ *   shallow
+ * )
+ * ```
+ */
 export const useTransactionStore = create<TransactionState>((set) => ({
   transactions: [
     {
@@ -90,3 +97,6 @@ export const useTransactionStore = create<TransactionState>((set) => ({
   addTransaction: (transaction) =>
     set((state) => ({ transactions: [...state.transactions, transaction] })),
 }))
+
+// Re-export shallow for convenience in components
+export { shallow }

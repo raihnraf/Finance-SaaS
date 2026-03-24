@@ -1,12 +1,15 @@
-import { useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useDashboardStore } from '@/store/dashboardStore'
 
+interface RevenueDataPoint {
+  month: string
+  revenue: number
+}
+
 export function RevenueGrowthChart() {
   const { timeframe } = useDashboardStore()
-  const [hoveredData, setHoveredData] = useState<any>(null)
 
-  const data = [
+  const data: RevenueDataPoint[] = [
     { month: 'May', revenue: 150000 },
     { month: 'Jun', revenue: 180000 },
     { month: 'Jul', revenue: 210000 },

@@ -1,4 +1,4 @@
-import { Home, DollarSign, Wallet, Receipt, Settings } from 'lucide-react'
+import { Home, DollarSign, Wallet, Receipt, Settings, Plus } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 
 const navItems = [
@@ -10,7 +10,14 @@ const navItems = [
 ]
 
 export function SideNavigation() {
-  const { activeNav, setActiveNav } = useUIStore()
+  const { activeNav, setActiveNav, openNewTransactionModal } = useUIStore()
+
+  const handleNavClick = (navId: string) => {
+    console.log('[Navigation] Clicked:', navId)
+    console.log('[Navigation] Current activeNav:', activeNav)
+    setActiveNav(navId)
+    console.log('[Navigation] Called setActiveNav with:', navId)
+  }
 
   return (
     <aside className="fixed left-0 top-0 h-full flex flex-col w-64 bg-slate-50 border-none z-50">
@@ -34,7 +41,7 @@ export function SideNavigation() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveNav(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
                   isActive
                     ? 'text-blue-700 bg-white border-r-2 border-blue-700'
@@ -50,8 +57,11 @@ export function SideNavigation() {
 
         {/* Add Transaction Button */}
         <div className="mt-12">
-          <button className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:bg-primary-container transition-all">
-            <span className="w-5 h-5 flex items-center justify-center bg-white/20 rounded-full text-xs">+</span>
+          <button
+            onClick={openNewTransactionModal}
+            className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
             Add Transaction
           </button>
         </div>

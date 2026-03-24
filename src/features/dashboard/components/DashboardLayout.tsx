@@ -11,7 +11,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <>
       <SideNavigation />
       <TopNavigation />
-      <main className="ml-64 mt-16 p-10 min-h-screen bg-surface">
+      <main className="ml-64 mt-16 min-h-screen bg-surface">
         {children}
       </main>
     </>

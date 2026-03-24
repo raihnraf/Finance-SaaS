@@ -40,8 +40,9 @@ const mockTeamMembers: TeamMember[] = [
 
 export function AccountSettings() {
   return (
-    <main className="ml-64 pt-32 pb-20 px-12 min-h-screen">
+    <div className="p-10">
       <div className="max-w-6xl mx-auto">
+        {/* Page Header */}
         {/* Page Header */}
         <div className="mb-12">
           <h2 className="text-4xl font-semibold tracking-tight text-on-surface mb-2">
@@ -314,6 +315,6 @@ export function AccountSettings() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

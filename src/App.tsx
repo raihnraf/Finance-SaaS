@@ -1,3 +1,4 @@
+import { lazy, Suspense, ReactNode } from 'react'
 import {
   DashboardLayout,
   HeroSection,
@@ -6,16 +7,49 @@ import {
   TransactionsTable,
   QuickActions,
   FloatingActionButton,
-  RevenueDashboard,
-  CashFlowDashboard,
-  TransactionsDashboard,
-  AccountSettings,
+  DashboardSkeleton,
+  ErrorState,
+  NewTransactionModal,
 } from '@/features/dashboard/components'
 import { useUIStore } from '@/store/uiStore'
+import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData'
 
+// Temporarily import directly to debug
+import { RevenueDashboard } from './features/dashboard/components/RevenueDashboard'
+import { CashFlowDashboard } from './features/dashboard/components/CashFlowDashboard'
+import { TransactionsDashboard } from './features/dashboard/components/TransactionsDashboard'
+import { AccountSettings } from './features/dashboard/components/AccountSettings'
+
+// Lazy load heavy dashboard components for code splitting
+// const RevenueDashboard = lazy(() => import('./features/dashboard/components/RevenueDashboard'))
+// const CashFlowDashboard = lazy(() => import('./features/dashboard/components/CashFlowDashboard'))
+// const TransactionsDashboard = lazy(() => import('./features/dashboard/components/TransactionsDashboard'))
+// const AccountSettings = lazy(() => import('./features/dashboard/components/AccountSettings'))
+
+/**
+ * Main dashboard view with real-time data from TanStack Query.
+ * Shows loading skeleton while data is fetching.
+ */
 function Dashboard() {
+  const { data, isLoading, error, refetch } = useDashboardData()
+
+  if (isLoading) {
+    return <DashboardSkeleton />
+  }
+
+  if (error) {
+    return (
+      <ErrorState 
+        error={error} 
+        onRetry={() => refetch()}
+        title="Failed to load dashboard"
+        message="We couldn't fetch the latest financial data. Please try again."
+      />
+    )
+  }
+
   return (
-    <>
+    <div className="p-10">
       <HeroSection />
       <div className="grid grid-cols-12 gap-8">
         <RevenueGrowthChart />
@@ -24,31 +58,64 @@ function Dashboard() {
         <QuickActions />
       </div>
       <FloatingActionButton />
-    </>
+    </div>
+  )
+}
+
+/**
+ * Page loader component for Suspense fallback.
+ * Displays while lazy-loaded components are being fetched.
+ */
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm text-on-surface-variant font-medium">Loading...</p>
+      </div>
+    </div>
   )
 }
 
 function App() {
-  const { activeNav } = useUIStore()
+  const { activeNav, showNewTransactionModal, closeNewTransactionModal } = useUIStore()
 
-  const renderContent = () => {
+  console.log('[App] Rendering with activeNav:', activeNav)
+
+  const renderContent = (): ReactNode => {
+    console.log('[App] renderContent called, activeNav:', activeNav)
     switch (activeNav) {
       case 'dashboard':
+        console.log('[App] Rendering Dashboard')
         return <Dashboard />
       case 'revenue':
+        console.log('[App] Rendering RevenueDashboard')
         return <RevenueDashboard />
       case 'cashflow':
+        console.log('[App] Rendering CashFlowDashboard')
         return <CashFlowDashboard />
       case 'transactions':
+        console.log('[App] Rendering TransactionsDashboard')
         return <TransactionsDashboard />
       case 'settings':
+        console.log('[App] Rendering AccountSettings')
         return <AccountSettings />
       default:
+        console.log('[App] Rendering default Dashboard')
         return <Dashboard />
     }
   }
 
-  return <DashboardLayout>{renderContent()}</DashboardLayout>
+  return (
+    <>
+      <DashboardLayout>
+        {/* Temporarily removed Suspense for debugging */}
+        {renderContent()}
+      </DashboardLayout>
+      {/* Global New Transaction Modal */}
+      {showNewTransactionModal && <NewTransactionModal onClose={closeNewTransactionModal} />}
+    </>
+  )
 }
 
 export default App

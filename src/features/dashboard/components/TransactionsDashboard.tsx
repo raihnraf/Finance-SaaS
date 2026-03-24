@@ -1,96 +1,98 @@
-import {
-  Cloud,
-  Sparkles,
-  TrendingUp,
-  Mail,
-  Database,
-  Download,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  MoreVertical,
-  Trash2,
-  Search,
-  ChevronDown,
-} from 'lucide-react'
-
-interface Transaction {
-  id: string
-  name: string
-  category: string
-  date: string
-  time: string
-  amount: string
-  status: 'completed' | 'pending' | 'failed'
-  icon: any
-  type: 'income' | 'expense'
-}
-
-const mockTransactions: Transaction[] = [
-  {
-    id: '#AWS-99210',
-    name: 'Amazon Web Services',
-    category: 'Infrastructure',
-    date: 'Oct 24, 2023',
-    time: '14:22 PM',
-    amount: '-$12,450.00',
-    status: 'completed',
-    icon: Cloud,
-    type: 'expense',
-  },
-  {
-    id: '#GPT-40293',
-    name: 'OpenAI Subscription',
-    category: 'SaaS',
-    date: 'Oct 22, 2023',
-    time: '09:10 AM',
-    amount: '-$2,400.00',
-    status: 'pending',
-    icon: Sparkles,
-    type: 'expense',
-  },
-  {
-    id: '#INV-0012',
-    name: 'Client Retainer - Alpha',
-    category: 'Income',
-    date: 'Oct 20, 2023',
-    time: '16:45 PM',
-    amount: '+$45,000.00',
-    status: 'completed',
-    icon: TrendingUp,
-    type: 'income',
-  },
-  {
-    id: '#MC-8812',
-    name: 'Mailchimp Marketing',
-    category: 'SaaS',
-    date: 'Oct 19, 2023',
-    time: '11:00 AM',
-    amount: '-$850.00',
-    status: 'completed',
-    icon: Mail,
-    type: 'expense',
-  },
-  {
-    id: '#SNW-2210',
-    name: 'Snowflake Data',
-    category: 'Infrastructure',
-    date: 'Oct 18, 2023',
-    time: '08:30 AM',
-    amount: '-$3,120.00',
-    status: 'failed',
-    icon: Database,
-    type: 'expense',
-  },
-]
+import { Download, MoreVertical, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye } from 'lucide-react'
+import { useTransactionStore } from '@/store/transactionStore'
+import { TransactionSummaryCards } from './TransactionSummaryCards'
+import { TransactionAnalyticsChart } from './TransactionAnalyticsChart'
+import { TransactionFilters } from './TransactionFilters'
+import { TransactionDetailModal } from './TransactionDetailModal'
+import { exportTransactionsToCSV } from '../services/transactionApi'
+import { useState, useMemo } from 'react'
 
 export function TransactionsDashboard() {
+  const transactions = useTransactionStore((state) => state.transactions)
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedStatus, setSelectedStatus] = useState('All')
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const itemsPerPage = 10
+
+  // Filter and search transactions
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((transaction) => {
+      const matchesSearch =
+        searchQuery === '' ||
+        transaction.recipient.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transaction.category.toLowerCase().includes(searchQuery.toLowerCase())
+
+      const matchesCategory = selectedCategory === 'All' || transaction.category === selectedCategory
+      const matchesStatus = selectedStatus === 'All' || transaction.status === selectedStatus
+
+      return matchesSearch && matchesCategory && matchesStatus
+    })
+  }, [transactions, searchQuery, selectedCategory, selectedStatus])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex)
+
+  const handleExport = () => {
+    exportTransactionsToCSV(filteredTransactions)
+  }
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === paginatedTransactions.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(paginatedTransactions.map((t) => t.id)))
+    }
+  }
+
+  const handleSelectOne = (id: string) => {
+    const newSelected = new Set(selectedIds)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const handleBulkDelete = () => {
+    // This would normally call an API to delete transactions
+    // For portfolio demo, we just clear the selection
+    setSelectedIds(new Set())
+  }
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      'Revenue': 'bg-green-100 text-green-700',
+      'Infrastructure': 'bg-blue-100 text-blue-700',
+      'Payment Gateway': 'bg-purple-100 text-purple-700',
+      'Software': 'bg-orange-100 text-orange-700',
+    }
+    return colors[category] || 'bg-gray-100 text-gray-700'
+  }
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      'completed': { text: 'text-primary', bg: 'bg-primary' },
+      'pending': { text: 'text-tertiary', bg: 'bg-tertiary' },
+      'failed': { text: 'text-error', bg: 'bg-error' },
+    }
+    return colors[status] || { text: 'text-gray', bg: 'bg-gray' }
+  }
+
   return (
-    <div className="pt-28 px-12 pb-20">
+    <div className="p-10 relative z-10">
       {/* Page Header Section */}
-      <section className="mb-12 flex justify-between items-end">
+      <section className="mb-8 flex justify-between items-end relative z-20">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-on-surface mb-2">
             Transactions
@@ -100,58 +102,31 @@ export function TransactionsDashboard() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-surface-container-lowest text-on-surface-variant rounded-xl border border-outline-variant/20 font-medium text-sm hover:bg-surface-container-low transition-colors active:scale-95 transition-transform">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-6 py-2.5 bg-surface-container-lowest text-on-surface-variant rounded-xl border border-outline-variant/20 font-medium text-sm hover:bg-surface-container-low transition-colors"
+          >
             <Download className="w-5 h-5" />
             Export CSV
-          </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-on-primary rounded-xl font-medium text-sm hover:opacity-90 transition-opacity active:scale-95 transition-transform shadow-md shadow-primary/10">
-            <Plus className="w-5 h-5" />
-            New Transaction
           </button>
         </div>
       </section>
 
-      {/* Filters Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface-container-low p-1 rounded-2xl flex">
-          <button className="flex-1 py-2 px-4 bg-white text-on-surface rounded-xl shadow-sm font-medium text-xs">
-            All Time
-          </button>
-          <button className="flex-1 py-2 px-4 text-on-surface-variant font-medium text-xs hover:text-on-surface transition-colors">
-            Month
-          </button>
-          <button className="flex-1 py-2 px-4 text-on-surface-variant font-medium text-xs hover:text-on-surface transition-colors">
-            Year
-          </button>
-        </div>
-        <div className="relative">
-          <select className="w-full bg-surface-container-low border-none rounded-2xl px-5 py-3 text-sm font-medium appearance-none focus:ring-2 focus:ring-primary/20 text-on-surface-variant">
-            <option>Category: All</option>
-            <option>SaaS</option>
-            <option>Infrastructure</option>
-            <option>Income</option>
-            <option>Marketing</option>
-          </select>
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none w-5 h-5" />
-        </div>
-        <div className="relative">
-          <select className="w-full bg-surface-container-low border-none rounded-2xl px-5 py-3 text-sm font-medium appearance-none focus:ring-2 focus:ring-primary/20 text-on-surface-variant">
-            <option>Status: All</option>
-            <option>Completed</option>
-            <option>Pending</option>
-            <option>Failed</option>
-          </select>
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none w-5 h-5" />
-        </div>
-        <div className="relative">
-          <input
-            className="w-full bg-surface-container-low border-none rounded-2xl px-5 py-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 placeholder:text-on-surface-variant/60"
-            placeholder="Amount Range"
-            type="text"
-          />
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-outline w-5 h-5" />
-        </div>
-      </section>
+      {/* Summary Cards */}
+      <TransactionSummaryCards />
+
+      {/* Analytics Chart */}
+      <TransactionAnalyticsChart />
+
+      {/* Filters */}
+      <TransactionFilters
+        onSearch={setSearchQuery}
+        onCategoryFilter={setSelectedCategory}
+        onStatusFilter={setSelectedStatus}
+        searchQuery={searchQuery}
+        selectedCategory={selectedCategory}
+        selectedStatus={selectedStatus}
+      />
 
       {/* Main Table Bento Card */}
       <div className="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0px_20px_40px_rgba(25,28,29,0.04)]">
@@ -159,23 +134,36 @@ export function TransactionsDashboard() {
         <div className="px-8 py-6 border-b border-surface-container-low flex justify-between items-center bg-white">
           <div className="flex items-center gap-4">
             <span className="text-sm font-bold text-on-surface">
-              Active Selection: <span className="text-primary">12 Items</span>
+              Active Selection: <span className="text-primary">{selectedIds.size} Items</span>
             </span>
             <div className="h-4 w-[1px] bg-outline-variant/30"></div>
-            <button className="text-xs font-bold text-error hover:opacity-80 transition-opacity flex items-center gap-1">
-              <Trash2 className="w-4 h-4" />
-              Bulk Delete
-            </button>
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="text-xs font-bold text-error hover:opacity-80 transition-opacity flex items-center gap-1"
+              >
+                <Trash2 className="w-4 h-4" />
+                Bulk Delete
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-on-surface-variant font-medium">
-              Showing 1-12 of 480
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length}
             </span>
             <div className="flex gap-1 ml-4">
-              <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
@@ -187,7 +175,12 @@ export function TransactionsDashboard() {
             <thead>
               <tr className="bg-surface-container-low/50">
                 <th className="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary/20 bg-transparent" type="checkbox" />
+                  <input
+                    checked={selectedIds.size === paginatedTransactions.length && paginatedTransactions.length > 0}
+                    onChange={handleSelectAll}
+                    className="rounded border-outline-variant text-primary focus:ring-primary/20 bg-transparent cursor-pointer"
+                    type="checkbox"
+                  />
                 </th>
                 <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
                   Transaction
@@ -208,112 +201,147 @@ export function TransactionsDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-container-low">
-              {mockTransactions.map((transaction, index) => (
-                <tr
-                  key={transaction.id}
-                  className="hover:bg-surface-container-low/30 transition-colors group"
-                >
-                  <td className="px-8 py-5">
-                    <input
-                      checked={index === 0}
-                      className="rounded border-outline-variant text-primary focus:ring-primary/20 bg-transparent"
-                      type="checkbox"
-                    />
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
-                        <transaction.icon className="w-5 h-5" />
+              {paginatedTransactions.map((transaction) => {
+                const statusColors = getStatusColor(transaction.status)
+                const isIncome = transaction.amount > 0
+
+                return (
+                  <tr
+                    key={transaction.id}
+                    className="hover:bg-surface-container-low/30 transition-colors group cursor-pointer"
+                    onClick={() => setSelectedTransaction(transaction)}
+                  >
+                    <td
+                      className="px-8 py-5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        checked={selectedIds.has(transaction.id)}
+                        onChange={() => handleSelectOne(transaction.id)}
+                        className="rounded border-outline-variant text-primary focus:ring-primary/20 bg-transparent cursor-pointer"
+                        type="checkbox"
+                      />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center">
+                          <span className="text-sm font-bold text-primary">
+                            {transaction.initials}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-on-surface">{transaction.recipient}</p>
+                          <p className="text-[11px] text-on-surface-variant font-medium">
+                            ID: {transaction.id}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-on-surface">{transaction.name}</p>
-                        <p className="text-[11px] text-on-surface-variant font-medium">
-                          ID: {transaction.id}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight ${
-                        transaction.category === 'Income'
-                          ? 'bg-green-100 text-green-700'
-                          : transaction.category === 'SaaS'
-                          ? 'bg-primary-fixed/30 text-on-primary-fixed-variant'
-                          : 'bg-secondary-container/30 text-on-secondary-container'
-                      }`}
-                    >
-                      {transaction.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <p className="text-sm font-medium text-on-surface">{transaction.date}</p>
-                    <p className="text-[11px] text-on-surface-variant">{transaction.time}</p>
-                  </td>
-                  <td className="px-6 py-5">
-                    <p
-                      className={`text-sm font-bold font-mono ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-on-surface'
-                      }`}
-                    >
-                      {transaction.amount}
-                    </p>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span
-                      className={`flex items-center gap-1.5 text-xs font-bold ${
-                        transaction.status === 'completed'
-                          ? 'text-primary'
-                          : transaction.status === 'pending'
-                          ? 'text-tertiary'
-                          : 'text-error'
-                      }`}
-                    >
+                    </td>
+                    <td className="px-6 py-5">
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          transaction.status === 'completed'
-                            ? 'bg-primary'
-                            : transaction.status === 'pending'
-                            ? 'bg-tertiary'
-                            : 'bg-error'
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight ${getCategoryColor(
+                          transaction.category
+                        )}`}
+                      >
+                        {transaction.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="text-sm font-medium text-on-surface">{transaction.date}</p>
+                      <p className="text-[11px] text-on-surface-variant">{transaction.time}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p
+                        className={`text-sm font-bold font-mono ${
+                          isIncome ? 'text-green-600' : 'text-on-surface'
                         }`}
-                      ></span>
-                      {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-surface-container-high rounded-lg text-outline">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      >
+                        {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span
+                        className={`flex items-center gap-1.5 text-xs font-bold ${statusColors.text}`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusColors.bg}`}></span>
+                        {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                      </span>
+                    </td>
+                    <td
+                      className="px-8 py-5 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => setSelectedTransaction(transaction)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-surface-container-high rounded-lg text-outline mr-2"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                      <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-surface-container-high rounded-lg text-outline">
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Pagination Footer */}
         <div className="px-8 py-6 bg-surface-container-low/20 flex justify-between items-center">
-          <button className="text-xs font-bold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="text-xs font-bold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <ChevronsLeft className="w-4 h-4" />
             First Page
           </button>
           <div className="flex gap-2">
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary text-xs font-bold">
-              1
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low text-xs font-bold">
-              2
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low text-xs font-bold">
-              3
-            </button>
-            <span className="flex items-center px-2 text-outline">...</span>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low text-xs font-bold">
-              40
-            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum
+              if (totalPages <= 5) {
+                pageNum = i + 1
+              } else if (currentPage <= 3) {
+                pageNum = i + 1
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i
+              } else {
+                pageNum = currentPage - 2 + i
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ${
+                    currentPage === pageNum
+                      ? 'bg-primary text-on-primary'
+                      : 'text-on-surface-variant hover:bg-surface-container-low'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            })}
+            {totalPages > 5 && (
+              <>
+                <span className="flex items-center px-2 text-outline">...</span>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low text-xs font-bold"
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
           </div>
-          <button className="text-xs font-bold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="text-xs font-bold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Last Page
             <ChevronsRight className="w-4 h-4" />
           </button>
@@ -361,6 +389,12 @@ export function TransactionsDashboard() {
           <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
         </div>
       </section>
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        transaction={selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+      />
     </div>
   )
 }
